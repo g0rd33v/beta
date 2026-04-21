@@ -651,6 +651,14 @@ const STATUS_OVERRIDE = {
   'qoin': 'dev'
 };
 
+// Custom descriptions (richer than GitHub's one-liner). Falls back to GitHub description if not listed.
+const DESCRIPTION_OVERRIDE = {
+  'wizrag': 'A URL that any AI can read from, write to, and browse as a wiki. Cross-chat knowledge that survives every session — ChatGPT, Claude, Grok, or any LLM.',
+  'zeus-protocol': 'A protocol for extending a single human being beyond natural limits. AI across seven domains — cognitive, creative, economic, physical, social, emotional, temporal. For life, and after.',
+  'party': 'There are no messengers anymore. Just agents. Every agent holds court in its own room; humans walk in with Face ID and a link. Rooms live while anyone stays, then vanish.',
+  'qoin': 'Single-file Ethereum wallet. Face ID is the key. Agents propose transactions as links; you confirm with your face. One face, unlimited wallets.'
+};
+
 // GitHub-ish language colors
 const LANG_COLORS = {
   'HTML': '#e34c26',
@@ -691,6 +699,7 @@ function renderRepos(repos) {
 
   list.innerHTML = repos.map((r, i) => {
     const status = STATUS_OVERRIDE[r.name] || (r.description ? 'beta' : 'dev');
+    const description = DESCRIPTION_OVERRIDE[r.name] || r.description;
     const langColor = LANG_COLORS[r.language] || '#9a9a9a';
     const localPath = `/${r.name}/`;
     const liveUrl = LIVE_URLS[r.name];
@@ -707,7 +716,7 @@ function renderRepos(repos) {
             ${esc(r.name)}
             <span class="project-arrow" aria-hidden="true">${icon('arrow')}</span>
           </a>
-          ${r.description ? `<p class="project-desc">${esc(r.description)}</p>` : ''}
+          ${description ? `<p class="project-desc">${esc(description)}</p>` : ''}
           <div class="project-tags">
             ${r.language ? `<span class="tag"><span class="lang-dot" style="background: ${langColor}"></span>${esc(r.language)}</span>` : ''}
             ${r.stargazers_count > 0 ? `<span class="tag">${icon('star')}${r.stargazers_count}</span>` : ''}
