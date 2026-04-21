@@ -749,6 +749,7 @@ async function fetchRepos() {
     if (!res.ok) throw new Error(`GitHub API returned ${res.status}`);
     const repos = await res.json();
     const filtered = repos
+      .filter(r => r.name !== 'beta')
       .filter(r => !r.fork || r.stargazers_count > 0)
       .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
     renderRepos(filtered);
