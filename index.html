@@ -626,6 +626,7 @@
 <template id="icon-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg></template>
 <template id="icon-star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></template>
 <template id="icon-fork"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M6 8.5v7M18 8.5c0 4-6 3.5-6 7.5"/></svg></template>
+<template id="icon-telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.334-.373-.121l-6.869 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.566-4.458c.538-.196 1.006.128.832.941z"/></svg></template>
 
 <script>
 /* ═══════════════════════════════════════════════════════════════════
@@ -640,7 +641,11 @@ const USER_API = `https://api.github.com/users/${GITHUB_USER}`;
 // Known production URLs per repo (extend as more projects go live)
 const LIVE_URLS = {
   'wizrag': 'https://wr.ag',
-  'zeus-protocol': 'https://zeus.labs.vc',
+  'zeus-protocol': 'https://zeus.labs.vc'
+};
+
+// Telegram mini-app URLs — render a separate action button with the Telegram icon
+const MINI_APP_URLS = {
   'silence': 'https://t.me/LabsRobot/silence'
 };
 
@@ -706,6 +711,7 @@ function renderRepos(repos) {
     const langColor = LANG_COLORS[r.language] || '#9a9a9a';
     const localPath = `/${r.name}/`;
     const liveUrl = LIVE_URLS[r.name];
+    const miniAppUrl = MINI_APP_URLS[r.name];
     const updated = new Date(r.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     return `
@@ -733,6 +739,9 @@ function renderRepos(repos) {
           </a>
           ${liveUrl ? `<a href="${esc(liveUrl)}" class="action" target="_blank" rel="noopener" aria-label="${esc(r.name)} live site">
             ${icon('arrow')}<span>live</span>
+          </a>` : ''}
+          ${miniAppUrl ? `<a href="${esc(miniAppUrl)}" class="action action-mini" target="_blank" rel="noopener" aria-label="${esc(r.name)} Telegram mini app">
+            ${icon('telegram')}<span>mini app</span>
           </a>` : ''}
           <a href="${esc(r.html_url)}" class="action" target="_blank" rel="noopener" aria-label="${esc(r.name)} on GitHub">
             ${icon('github')}<span>source</span>
