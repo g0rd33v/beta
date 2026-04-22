@@ -9,211 +9,284 @@
 <style>
   :root {
     --bg: #ffffff;
-    --ink: #111111;
-    --muted: #666666;
-    --line: #e5e5e5;
-    --accent: #111111;
+    --ink: #0a0a0a;
+    --muted: #6b6b6b;
+    --line: #e8e8e8;
+    --line-strong: #d1d1d1;
+    --accent: #0a0a0a;
+    --tint: rgba(10,10,10,0.04);
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #0a0a0a; --ink: #f2f2f2; --muted: #888888; --line: #1f1f1f; --accent: #f2f2f2; }
+    :root {
+      --bg: #0a0a0a; --ink: #fafafa; --muted: #8b8b8b;
+      --line: #1a1a1a; --line-strong: #2a2a2a;
+      --accent: #fafafa; --tint: rgba(250,250,250,0.04);
+    }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { font-size: 17px; }
   body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-weight: 500;
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
+    background: var(--bg); color: var(--ink);
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", sans-serif;
+    font-weight: 450; line-height: 1.6;
+    -webkit-font-smoothing: antialiased; font-feature-settings: "ss01", "cv01";
   }
-  .wrap {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 80px 32px 120px;
-  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 72px 32px 120px; }
 
-  /* HEADER */
-  header { margin-bottom: 72px; }
-  h1 {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 20px;
+  /* ── HEADER ─────────────────────────────────────── */
+  header { margin-bottom: 56px; }
+  .avatar-block { display: flex; align-items: center; gap: 20px; margin-bottom: 28px; }
+  .avatar {
+    width: 84px; height: 84px; border-radius: 50%;
+    background: var(--tint); overflow: hidden; flex-shrink: 0;
+    border: 1px solid var(--line-strong);
   }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .name-block { min-width: 0; }
+  h1 {
+    font-size: 26px; font-weight: 700; letter-spacing: -0.025em;
+    line-height: 1.15; margin-bottom: 4px;
+  }
+  .tag { color: var(--muted); font-size: 14px; letter-spacing: 0.01em; }
+
   .bio {
+    font-size: 16.5px; max-width: 620px; margin-bottom: 22px;
     color: var(--ink);
-    font-size: 17px;
-    max-width: 620px;
-    margin-bottom: 18px;
   }
   .bio a {
-    color: var(--ink);
-    text-decoration: underline;
-    text-decoration-color: var(--line);
-    text-underline-offset: 3px;
+    color: var(--ink); text-decoration: underline;
+    text-decoration-color: var(--line-strong); text-underline-offset: 3px;
+    transition: text-decoration-color .15s;
   }
   .bio a:hover { text-decoration-color: var(--ink); }
+
   .meta {
-    color: var(--muted);
-    font-size: 14px;
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 0; font-size: 13.5px; color: var(--muted);
   }
-  .meta a {
-    color: var(--muted);
-    text-decoration: underline;
-    text-decoration-color: var(--line);
-    text-underline-offset: 3px;
-  }
+  .meta .item { display: inline-flex; align-items: center; gap: 6px; }
+  .meta a { color: var(--muted); text-decoration: none; transition: color .15s; }
   .meta a:hover { color: var(--ink); }
-  .meta span + span::before {
-    content: "·";
-    margin: 0 10px;
-    color: var(--line);
+  .meta .sep {
+    width: 3px; height: 3px; background: var(--line-strong);
+    border-radius: 50%; margin: 0 12px;
+  }
+  .meta svg { width: 14px; height: 14px; opacity: 0.65; }
+
+  /* ── DECORATIVE DIVIDER ─────────────────────────── */
+  .divider {
+    display: flex; align-items: center; gap: 14px;
+    margin: 56px 0 40px; color: var(--muted);
+  }
+  .divider::before, .divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--line);
+  }
+  .divider-mark {
+    width: 6px; height: 6px; background: var(--line-strong);
+    border-radius: 50%; flex-shrink: 0;
   }
 
-  /* ABOUT SPACE */
-  .space {
-    margin: 56px 0 64px;
-    padding: 24px 0;
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
+  /* ── BACKSTAGE ──────────────────────────────────── */
+  .backstage {
+    margin-bottom: 56px; padding: 24px 28px;
+    background: var(--tint); border-radius: 3px;
+    border-left: 2px solid var(--line-strong);
   }
-  .space h2 {
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    margin-bottom: 10px;
+  .backstage h2 {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
   }
-  .space p {
-    color: var(--muted);
-    font-size: 15px;
-    max-width: 620px;
+  .backstage h2 svg { width: 12px; height: 12px; }
+  .backstage p {
+    color: var(--ink); font-size: 15px; max-width: 620px; opacity: 0.85;
   }
 
-  /* PROJECTS */
+  /* ── PROJECTS ───────────────────────────────────── */
   .section-title {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 24px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 4px;
+    display: flex; align-items: center; gap: 10px;
   }
+  .section-title::after {
+    content: ""; flex: 1; height: 1px; background: var(--line);
+  }
+  .section-title svg { width: 12px; height: 12px; }
 
   .projects { list-style: none; }
   .project {
-    padding: 24px 0;
-    border-top: 1px solid var(--line);
+    padding: 26px 0 24px;
+    border-bottom: 1px solid var(--line);
   }
-  .project:last-child { border-bottom: 1px solid var(--line); }
-
+  .project:last-child { border-bottom: none; }
   .project-head {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
+    display: flex; align-items: baseline; gap: 12px;
+    margin-bottom: 10px; flex-wrap: wrap;
   }
   .project-name {
-    font-size: 19px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--ink);
+    font-size: 20px; font-weight: 700; letter-spacing: -0.015em;
+  }
+  .project-dot {
+    width: 5px; height: 5px; background: var(--line-strong);
+    border-radius: 50%; opacity: 0.7;
   }
   .project-updated {
-    font-size: 13px;
-    color: var(--muted);
+    font-size: 12.5px; color: var(--muted);
+    font-variant-numeric: tabular-nums;
   }
-
   .project-desc {
-    color: var(--muted);
-    font-size: 15px;
-    margin-bottom: 14px;
-    max-width: 620px;
+    color: var(--muted); font-size: 15px; margin-bottom: 16px;
+    max-width: 620px; line-height: 1.55;
   }
-
   .links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    font-size: 14px;
+    display: flex; flex-wrap: wrap; gap: 4px 0;
   }
   .links a {
-    color: var(--ink);
-    text-decoration: underline;
-    text-decoration-color: var(--line);
-    text-underline-offset: 3px;
-    transition: text-decoration-color 0.15s;
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 14px 5px 0; margin-right: 10px;
+    color: var(--ink); text-decoration: none; font-size: 13.5px;
+    position: relative; transition: color .15s;
   }
-  .links a:hover { text-decoration-color: var(--ink); }
-  .links a[aria-disabled="true"] {
-    color: var(--muted);
-    text-decoration: none;
-    pointer-events: none;
-    opacity: 0.5;
-  }
+  .links a + a { padding-left: 14px; border-left: 1px solid var(--line); }
+  .links a:hover { color: var(--muted); }
+  .links svg { width: 13px; height: 13px; opacity: 0.7; }
 
-  /* FOOTER */
+  /* ── FOOTER ─────────────────────────────────────── */
   footer {
-    margin-top: 80px;
-    padding-top: 24px;
+    margin-top: 72px; padding-top: 22px;
     border-top: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 13px;
+    color: var(--muted); font-size: 12.5px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
   }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--ink); }
 
-  /* RESPONSIVE */
+  /* ── RESPONSIVE ─────────────────────────────────── */
   @media (max-width: 520px) {
-    .wrap { padding: 48px 24px 72px; }
-    header { margin-bottom: 48px; }
-    h1 { font-size: 24px; }
-    .project-head { gap: 8px; }
+    .wrap { padding: 48px 22px 80px; }
+    .avatar { width: 68px; height: 68px; }
+    h1 { font-size: 22px; }
+    .bio { font-size: 16px; }
+    .backstage { padding: 20px 22px; }
+    .links a { margin-right: 6px; padding-right: 10px; }
+    .links a + a { padding-left: 10px; }
   }
 
   a:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-    border-radius: 2px;
+    outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px;
   }
 </style>
 </head>
 <body>
 
+<!-- ── ICONS ────────────────────────────────────────── -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/>
+      <circle cx="12" cy="9" r="2.5"/>
+    </symbol>
+    <symbol id="i-telegram" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M22 2L2 10l6 2 2 6 4-4 5 4 3-16z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.16 17.52h1.833L7.084 4.126H5.117z"/>
+    </symbol>
+    <symbol id="i-github" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 .5C5.37.5 0 5.78 0 12.292c0 5.211 3.438 9.63 8.205 11.188.6.111.82-.254.82-.567 0-.28-.01-1.022-.015-2.005-3.338.711-4.042-1.582-4.042-1.582-.546-1.361-1.335-1.725-1.335-1.725-1.087-.731.084-.716.084-.716 1.205.082 1.838 1.215 1.838 1.215 1.07 1.803 2.809 1.282 3.495.981.108-.763.417-1.283.76-1.578-2.665-.295-5.466-1.309-5.466-5.827 0-1.287.465-2.339 1.235-3.164-.135-.298-.54-1.497.105-3.121 0 0 1.005-.316 3.3 1.209.96-.262 1.98-.392 3-.398 1.02.006 2.04.136 3 .398 2.28-1.525 3.285-1.209 3.285-1.209.645 1.624.24 2.823.12 3.121.765.825 1.23 1.877 1.23 3.164 0 4.53-2.805 5.527-5.475 5.817.42.354.81 1.077.81 2.182 0 1.578-.015 2.846-.015 3.229 0 .309.21.678.825.56C20.565 21.917 24 17.495 24 12.292 24 5.78 18.627.5 12 .5z"/>
+    </symbol>
+    <symbol id="i-envelope" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="5" width="18" height="14" rx="2"/>
+      <path d="M3 7l9 6 9-6"/>
+    </symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18"/>
+    </symbol>
+    <symbol id="i-beaker" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 3h6M10 3v6L4 19a2 2 0 0 0 1.7 3h12.6A2 2 0 0 0 20 19L14 9V3"/>
+      <path d="M7 15h10" opacity="0.6"/>
+    </symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2l2 7 7 2-7 2-2 7-2-7-7-2 7-2z" opacity="0.75"/>
+    </symbol>
+    <symbol id="i-server" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="6" rx="1"/>
+      <rect x="3" y="14" width="18" height="6" rx="1"/>
+      <circle cx="7" cy="7" r="0.8" fill="currentColor"/>
+      <circle cx="7" cy="17" r="0.8" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-pages" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 4h12l4 4v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" transform="translate(1 -1)"/>
+      <path d="M16 3v5h5" transform="translate(1 -1)"/>
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14M13 6l6 6-6 6"/>
+    </symbol>
+  </defs>
+</svg>
+
 <div class="wrap">
 
   <header>
-    <h1>Eugene Gordeev</h1>
+    <div class="avatar-block">
+      <div class="avatar">
+        <img src="/avatar.jpg" alt="Eugene Gordeev" width="84" height="84">
+      </div>
+      <div class="name-block">
+        <h1>Eugene Gordeev</h1>
+        <div class="tag">Founder · Labs VC</div>
+      </div>
+    </div>
+
     <p class="bio">
-      Founded <a href="https://labs.vc">Labs VC</a> — AI Venture Studio. Building <a href="https://labs.co">Labs</a> — The Index of AI Market, and <a href="https://zeus.labs.vc">Zeus</a> — The Almighty Protocol. 30 years in tech. Blockchain evangelist since 2013. Retinitis Pigmentosa (RP25).
+      Founded <a href="https://labs.vc">Labs VC</a> — AI Venture Studio. Building
+      <a href="https://labs.co">Labs</a> — The Index of AI Market, and
+      <a href="https://zeus.labs.vc">Zeus</a> — The Almighty Protocol.
+      30 years in tech. Blockchain evangelist since 2013.
+      Retinitis Pigmentosa (RP25).
     </p>
-    <p class="meta">
-      <span>London</span>
-      <span><a href="https://t.me/LabsVC">Telegram</a></span>
-      <span><a href="https://x.com/egordeev">X</a></span>
-      <span><a href="https://github.com/g0rd33v">GitHub</a></span>
-      <span><a href="https://atom.me/eugene">Contact</a></span>
-    </p>
+
+    <div class="meta">
+      <span class="item"><svg><use href="#i-pin"/></svg>London</span>
+      <span class="sep"></span>
+      <span class="item"><svg><use href="#i-telegram"/></svg><a href="https://t.me/LabsVC">Telegram</a></span>
+      <span class="sep"></span>
+      <span class="item"><svg><use href="#i-x"/></svg><a href="https://x.com/egordeev">X</a></span>
+      <span class="sep"></span>
+      <span class="item"><svg><use href="#i-github"/></svg><a href="https://github.com/g0rd33v">GitHub</a></span>
+      <span class="sep"></span>
+      <span class="item"><svg><use href="#i-envelope"/></svg><a href="https://atom.me/eugene">Contact</a></span>
+    </div>
   </header>
 
-  <section class="space">
-    <h2>Backstage</h2>
+  <div class="divider" aria-hidden="true">
+    <span class="divider-mark"></span>
+    <span class="divider-mark"></span>
+    <span class="divider-mark"></span>
+  </div>
+
+  <section class="backstage">
+    <h2><svg><use href="#i-beaker"/></svg>Backstage</h2>
     <p>Small ideas, built in hours or days. Thrown at the wall to see what sticks. Engineering fitness for the brain — a way to stay close to how the current stack actually works.</p>
   </section>
 
   <section>
-    <div class="section-title">Projects</div>
+    <div class="section-title">
+      <svg><use href="#i-sparkle"/></svg>
+      <span>Projects</span>
+    </div>
     <ul class="projects" id="projects"></ul>
   </section>
 
   <footer>
-    Labs · beta.labs.vc
+    <span>Labs · beta.labs.vc</span>
+    <a href="/status/">Status <svg width="12" height="12"><use href="#i-arrow"/></svg></a>
   </footer>
 
 </div>
 
 <script>
-/* Static data — no animations, no API calls.
-   To add a project: edit this array and push. */
 const PROJECTS = [
   {
     name: 'silence',
@@ -222,8 +295,7 @@ const PROJECTS = [
     links: {
       beta: 'https://beta.labs.vc/silence/',
       telegram: 'https://t.me/LabsRobot/silence',
-      github: 'https://github.com/g0rd33v/silence',
-      pages: null
+      github: 'https://github.com/g0rd33v/silence'
     }
   },
   {
@@ -231,10 +303,10 @@ const PROJECTS = [
     description: 'Universal Retrieval Protocol — one URL any AI can read from, write to, and browse as a wiki. Cross-chat knowledge for ChatGPT, Claude, Grok, any LLM.',
     updated: '2026-04-22',
     links: {
-      beta: 'https://beta.labs.vc/wizrag/',
       site: 'https://wizrag.com',
-      github: 'https://github.com/g0rd33v/wizrag',
-      pages: 'https://g0rd33v.github.io/wizrag/'
+      beta: 'https://beta.labs.vc/wizrag/',
+      pages: 'https://g0rd33v.github.io/wizrag/',
+      github: 'https://github.com/g0rd33v/wizrag'
     }
   },
   {
@@ -243,8 +315,8 @@ const PROJECTS = [
     updated: '2026-04-21',
     links: {
       beta: 'https://beta.labs.vc/party/',
-      github: 'https://github.com/g0rd33v/party',
-      pages: 'https://g0rd33v.github.io/party/'
+      pages: 'https://g0rd33v.github.io/party/',
+      github: 'https://github.com/g0rd33v/party'
     }
   },
   {
@@ -253,8 +325,8 @@ const PROJECTS = [
     updated: '2026-04-21',
     links: {
       beta: 'https://beta.labs.vc/qoin/',
-      github: 'https://github.com/g0rd33v/qoin',
-      pages: 'https://g0rd33v.github.io/qoin/'
+      pages: 'https://g0rd33v.github.io/qoin/',
+      github: 'https://github.com/g0rd33v/qoin'
     }
   },
   {
@@ -264,37 +336,33 @@ const PROJECTS = [
     links: {
       site: 'https://zeus.labs.vc',
       beta: 'https://beta.labs.vc/zeus-protocol/',
-      github: 'https://github.com/g0rd33v/zeus-protocol',
-      pages: 'https://g0rd33v.github.io/zeus-protocol/'
+      pages: 'https://g0rd33v.github.io/zeus-protocol/',
+      github: 'https://github.com/g0rd33v/zeus-protocol'
     }
   }
 ];
 
-const LABEL = {
-  beta: 'beta.labs.vc',
-  github: 'github',
-  pages: 'github pages',
-  telegram: 'telegram',
-  site: 'live site'
+const LINK_META = {
+  site: { label: 'live site', icon: '#i-globe' },
+  beta: { label: 'beta.labs.vc', icon: '#i-server' },
+  telegram: { label: 'telegram', icon: '#i-telegram' },
+  pages: { label: 'github pages', icon: '#i-pages' },
+  github: { label: 'github', icon: '#i-github' }
 };
 const ORDER = ['site', 'beta', 'telegram', 'pages', 'github'];
 
 const list = document.getElementById('projects');
 list.innerHTML = PROJECTS.map(p => {
   const links = ORDER
-    .filter(k => p.links[k] !== undefined)
-    .map(k => {
-      const url = p.links[k];
-      if (!url) return '';
-      return `<a href="${url}">${LABEL[k]}</a>`;
-    })
-    .filter(Boolean)
+    .filter(k => p.links[k])
+    .map(k => `<a href="${p.links[k]}"><svg><use href="${LINK_META[k].icon}"/></svg>${LINK_META[k].label}</a>`)
     .join('');
   const dt = new Date(p.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   return `
     <li class="project">
       <div class="project-head">
         <span class="project-name">${p.name}</span>
+        <span class="project-dot" aria-hidden="true"></span>
         <span class="project-updated">${dt}</span>
       </div>
       <p class="project-desc">${p.description}</p>
