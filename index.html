@@ -1,839 +1,307 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Eugene Gordeev · beta.labs.vc</title>
-<meta name="description" content="Public projects from Eugene Gordeev — Labs VC, Labs, Zeus Protocol. Mirrored from GitHub." />
-<meta name="robots" content="index,follow" />
-
-<meta property="og:title" content="Eugene Gordeev · beta.labs.vc" />
-<meta property="og:description" content="Public projects from Eugene Gordeev — Labs VC, Labs, Zeus Protocol." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://beta.labs.vc" />
-<meta property="og:image" content="https://avatars.githubusercontent.com/u/56077297?v=4" />
-
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ffffff'/%3E%3Ccircle cx='22' cy='10' r='4' fill='%23000000'/%3E%3C/svg%3E" />
-
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eugene Gordeev</title>
+<meta name="description" content="Experiments, prototypes, and live builds.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Georgia' font-size='20' fill='%23fff'%3Eg%3C/text%3E%3C/svg%3E">
 <style>
-  /* ══════════════════════════════════════════════════════════════════
-     RP25 ACCESSIBILITY — HIGH CONTRAST
-     All text hits WCAG AAA (7:1+) against pure black.
-     Base text 17px/500. Borders are visible, never ghost.
-     ══════════════════════════════════════════════════════════════════ */
   :root {
-    --bg: #000000;
-    --surface: #0f0f0f;
-    --surface-hover: #1a1a1a;
-    --border: rgba(255, 255, 255, 0.18);
-    --border-strong: rgba(255, 255, 255, 0.32);
-    --text: #ffffff;              /* 21:1 */
-    --text-bright: #f2f2f2;       /* 19:1 — body */
-    --text-muted: #c8c8c8;        /* 14:1 — descriptions */
-    --text-meta: #9a9a9a;         /* 8.2:1 — meta */
-    --accent: #2563eb;
-    --live: #22c55e;
-    --beta: #eab308;
-    --dev: #9a9a9a;
-    --radius: 14px;
-    --radius-sm: 8px;
-    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --bg: #ffffff;
+    --ink: #111111;
+    --muted: #666666;
+    --line: #e5e5e5;
+    --accent: #111111;
   }
-
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0a0a0a; --ink: #f2f2f2; --muted: #888888; --line: #1f1f1f; --accent: #f2f2f2; }
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html { scroll-behavior: smooth; }
-
+  html { font-size: 17px; }
   body {
     background: var(--bg);
-    color: var(--text-bright);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 17px;
-    line-height: 1.6;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 500;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    min-height: 100vh;
-    overflow-x: hidden;
   }
-
-  .container {
-    max-width: 960px;
+  .wrap {
+    max-width: 720px;
     margin: 0 auto;
-    padding: 32px 32px 96px;
+    padding: 80px 32px 120px;
   }
 
-  /* ─── NAV ─── */
-  nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0 56px;
-    opacity: 0;
-    animation: fadeIn 0.6s var(--ease) forwards;
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    text-decoration: none;
-    color: var(--text);
-    font-weight: 800;
+  /* HEADER */
+  header { margin-bottom: 72px; }
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
     letter-spacing: -0.02em;
-    font-size: 16px;
-  }
-
-  .brand-mark {
-    width: 24px;
-    height: 24px;
-    background: var(--text);
-    border-radius: 6px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .brand-mark::after {
-    content: '';
-    position: absolute;
-    inset: 6px 6px auto auto;
-    width: 7px;
-    height: 7px;
-    background: var(--bg);
-    border-radius: 50%;
-  }
-
-  .nav-links {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .nav-link {
-    color: var(--text-muted);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 8px 12px;
-    border-radius: var(--radius-sm);
-    transition: all 0.2s var(--ease);
-  }
-
-  .nav-link:hover {
-    color: var(--text);
-    background: var(--surface-hover);
-  }
-  .nav-link svg { width: 16px; height: 16px; }
-
-  /* ─── PROFILE ─── */
-  header { padding: 24px 0 64px; }
-
-  .profile {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 28px;
-    align-items: start;
-    opacity: 0;
-    animation: fadeUp 0.8s var(--ease) 0.15s forwards;
-  }
-
-  .avatar {
-    width: 96px;
-    height: 96px;
-    border-radius: 50%;
-    background: var(--surface);
-    border: 2px solid var(--border-strong);
-    background-size: cover;
-    background-position: center;
-    flex-shrink: 0;
-  }
-
-  .profile-name {
-    font-size: clamp(36px, 6vw, 56px);
-    font-weight: 900;
-    letter-spacing: -0.035em;
-    line-height: 1.0;
-    margin-bottom: 8px;
-    color: var(--text);
-  }
-
-  .profile-handle {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-muted);
     margin-bottom: 20px;
   }
-
-  .profile-bio {
-    font-size: 18px;
-    line-height: 1.55;
-    color: var(--text-bright);
-    margin-bottom: 20px;
-    font-weight: 500;
-    max-width: 640px;
+  .bio {
+    color: var(--ink);
+    font-size: 17px;
+    max-width: 620px;
+    margin-bottom: 18px;
   }
-
-  .profile-bio strong { color: var(--text); font-weight: 700; }
-
-  .profile-bio a {
-    color: var(--text);
-    text-decoration: none;
-    border-bottom: 1px solid var(--border-strong);
-    transition: border-color 0.2s var(--ease);
-  }
-  .profile-bio a:hover { border-bottom-color: var(--text); }
-
-  .profile-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-muted);
-    align-items: center;
-  }
-
-  .profile-meta-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .profile-meta-item svg {
-    width: 16px;
-    height: 16px;
-    color: var(--text-meta);
-    flex-shrink: 0;
-  }
-
-  .profile-meta-item a {
-    color: var(--text-muted);
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-    transition: all 0.2s var(--ease);
-  }
-
-  .profile-meta-item a:hover {
-    color: var(--text);
-    border-bottom-color: var(--border-strong);
-  }
-
-  .rp-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border: 1px solid var(--border-strong);
-    border-radius: 20px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-bright);
-    letter-spacing: 0.04em;
-  }
-
-  /* ─── ABOUT THIS SPACE ─── */
-  .about-space {
-    opacity: 0;
-    animation: fadeUp 0.8s var(--ease) 0.4s forwards;
-  }
-
-  .space-name {
-    font-size: clamp(28px, 4vw, 38px);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.05;
-    margin-bottom: 16px;
-    color: var(--text);
-  }
-
-  .space-desc {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text-muted);
-    line-height: 1.65;
-    max-width: 640px;
-  }
-
-  /* ─── SECTION HEAD ─── */
-  .section-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    margin: 48px 0 28px;
-    padding-bottom: 18px;
-    border-bottom: 2px solid var(--border);
-    opacity: 0;
-    animation: fadeUp 0.8s var(--ease) 0.35s forwards;
-  }
-
-  .section-title {
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-bright);
-  }
-
-  .section-count {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
-  }
-
-  /* ─── PROJECTS ─── */
-  .projects {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .project {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 24px;
-    padding: 26px 8px;
-    border-bottom: 1px solid var(--border);
-    transition: padding 0.3s var(--ease), background 0.2s var(--ease);
-    opacity: 0;
-    animation: fadeUp 0.7s var(--ease) forwards;
-  }
-
-  .project:hover { padding-left: 18px; padding-right: 18px; }
-  .project:hover .project-name { color: var(--text); }
-  .project:hover .project-arrow { transform: translate(3px, -3px); opacity: 1; }
-
-  .project-status {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    min-width: 78px;
-  }
-
-  .status-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .status-dot.live { background: var(--live); box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18); }
-  .status-dot.beta { background: var(--beta); box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.18); }
-  .status-dot.dev { background: var(--dev); box-shadow: 0 0 0 4px rgba(154, 154, 154, 0.18); }
-
-  .status-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-muted);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .project-main { min-width: 0; }
-
-  .project-name {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--text);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: color 0.2s var(--ease);
-  }
-
-  .project-arrow {
-    opacity: 0.6;
-    transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
-  }
-
-  .project-arrow svg { width: 16px; height: 16px; }
-
-  .project-desc {
-    margin-top: 8px;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text-muted);
-    line-height: 1.55;
-    max-width: 560px;
-  }
-
-  .project-tags {
-    margin-top: 12px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--text-meta);
-  }
-
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .tag svg { width: 13px; height: 13px; }
-
-  .lang-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--text-meta);
-  }
-
-  .project-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .action {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 14px;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-decoration: none;
-    border: 1px solid var(--border);
-    background: transparent;
-    transition: all 0.2s var(--ease);
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.02em;
-  }
-
-  .action:hover {
-    color: var(--text);
-    background: var(--surface-hover);
-    border-color: var(--border-strong);
-  }
-
-  .action svg { width: 14px; height: 14px; flex-shrink: 0; }
-
-  /* Skeleton loading */
-  .skeleton {
-    padding: 26px 8px;
-    border-bottom: 1px solid var(--border);
-    animation: pulse-skel 1.6s var(--ease) infinite;
-  }
-  .skel-line {
-    height: 20px;
-    background: var(--surface);
-    border-radius: 4px;
-    margin-bottom: 10px;
-  }
-  .skel-line.w-30 { width: 30%; }
-  .skel-line.w-60 { width: 60%; }
-  .skel-line.w-80 { width: 80%; }
-
-  .error-state {
-    padding: 40px 8px;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 1.7;
-  }
-  .error-state a {
-    color: var(--text);
+  .bio a {
+    color: var(--ink);
     text-decoration: underline;
-    text-decoration-color: var(--border-strong);
+    text-decoration-color: var(--line);
     text-underline-offset: 3px;
   }
+  .bio a:hover { text-decoration-color: var(--ink); }
+  .meta {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .meta a {
+    color: var(--muted);
+    text-decoration: underline;
+    text-decoration-color: var(--line);
+    text-underline-offset: 3px;
+  }
+  .meta a:hover { color: var(--ink); }
+  .meta span + span::before {
+    content: "·";
+    margin: 0 10px;
+    color: var(--line);
+  }
 
-  /* ─── FOOTER ─── */
-  footer {
-    margin-top: 72px;
-    padding-top: 32px;
-    border-top: 2px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+  /* ABOUT SPACE */
+  .space {
+    margin: 56px 0 64px;
+    padding: 24px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .space h2 {
+    font-size: 15px;
     font-weight: 600;
-    color: var(--text-muted);
     letter-spacing: 0.02em;
-    opacity: 0;
-    animation: fadeUp 0.8s var(--ease) 0.6s forwards;
+    margin-bottom: 10px;
+  }
+  .space p {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 620px;
   }
 
-  footer a {
-    color: var(--text-muted);
+  /* PROJECTS */
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .projects { list-style: none; }
+  .project {
+    padding: 24px 0;
+    border-top: 1px solid var(--line);
+  }
+  .project:last-child { border-bottom: 1px solid var(--line); }
+
+  .project-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .project-name {
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .project-updated {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .project-desc {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 14px;
+    max-width: 620px;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    font-size: 14px;
+  }
+  .links a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--line);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s;
+  }
+  .links a:hover { text-decoration-color: var(--ink); }
+  .links a[aria-disabled="true"] {
+    color: var(--muted);
     text-decoration: none;
-    transition: color 0.2s var(--ease);
+    pointer-events: none;
+    opacity: 0.5;
   }
 
-  footer a:hover { color: var(--text); }
-
-  .footer-links { display: flex; gap: 22px; flex-wrap: wrap; }
-
-  /* ─── ANIMATIONS ─── */
-  @keyframes fadeIn { to { opacity: 1; } }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes pulse-skel {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 0.9; }
+  /* FOOTER */
+  footer {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
   }
 
-  /* ─── RESPONSIVE ─── */
-  @media (max-width: 720px) {
-    .container { padding: 22px 20px 72px; }
-    nav { padding-bottom: 40px; }
-    header { padding: 16px 0 48px; }
-
-    .profile { grid-template-columns: 1fr; gap: 20px; }
-    .avatar { width: 80px; height: 80px; }
-
-    .profile-bio { font-size: 17px; }
-    .profile-meta { font-size: 13.5px; gap: 14px; }
-
-    .project {
-      grid-template-columns: 1fr;
-      gap: 14px;
-      padding: 22px 4px;
-    }
-    .project:hover { padding-left: 4px; padding-right: 4px; }
-    .project-status { order: -1; }
-    .project-actions { flex-wrap: wrap; }
-    .action { padding: 8px 12px; font-size: 12.5px; }
-    .nav-link span { display: none; }
+  /* RESPONSIVE */
+  @media (max-width: 520px) {
+    .wrap { padding: 48px 24px 72px; }
+    header { margin-bottom: 48px; }
+    h1 { font-size: 24px; }
+    .project-head { gap: 8px; }
   }
 
-  a:focus-visible, button:focus-visible {
-    outline: 3px solid var(--accent);
+  a:focus-visible {
+    outline: 2px solid var(--accent);
     outline-offset: 3px;
-    border-radius: 4px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
+    border-radius: 2px;
   }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="wrap">
 
-  <!-- NAV -->
-  <nav>
-    <a href="/" class="brand">
-      <span class="brand-mark" aria-hidden="true"></span>
-      <span>labs</span>
-    </a>
-    <div class="nav-links">
-      <a href="https://t.me/LabsVC" class="nav-link" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1-.58.05-1.02-.38-1.58-.75-.88-.58-1.37-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.72-2.5 2.78-2.72.01-.03.01-.14-.06-.2-.07-.06-.18-.04-.25-.02-.11.02-1.82 1.16-5.14 3.41-.49.33-.93.5-1.32.49-.43-.01-1.27-.24-1.88-.44-.76-.25-1.37-.38-1.32-.81.03-.22.33-.44.92-.67 3.61-1.57 6.02-2.61 7.23-3.11 3.44-1.43 4.16-1.68 4.62-1.68.1 0 .34.02.49.15.12.1.16.25.18.35-.01.08-.01.27-.03.48z"/></svg>
-        <span>Telegram</span>
-      </a>
-      <a href="https://x.com/egordeev" class="nav-link" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-        <span>X</span>
-      </a>
-      <a href="https://github.com/g0rd33v" class="nav-link" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12a12 12 0 008.2 11.4c.6.1.82-.26.82-.58v-2c-3.33.73-4.03-1.6-4.03-1.6-.55-1.38-1.34-1.75-1.34-1.75-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.23-3.22-.13-.3-.53-1.52.12-3.17 0 0 1-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.29-1.23 3.29-1.23.66 1.65.25 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.3c0 .32.22.69.82.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        <span>GitHub</span>
-      </a>
-      <a href="https://atom.me/eugene" class="nav-link" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        <span>Contact</span>
-      </a>
-    </div>
-  </nav>
-
-  <!-- PROFILE -->
   <header>
-    <div class="profile">
-      <div class="avatar" style="background-image: url('https://avatars.githubusercontent.com/u/56077297?v=4')" role="img" aria-label="Eugene Gordeev avatar"></div>
-
-      <div>
-        <h1 class="profile-name">Eugene Gordeev</h1>
-        <p class="profile-handle">@g0rd33v · @egordeev</p>
-
-        <p class="profile-bio">
-          Founded <strong>Labs VC</strong> · AI Venture Studio (<a href="https://labs.vc" target="_blank" rel="noopener">labs.vc</a>). <strong>Labs</strong> · The Index of AI Market (<a href="https://labs.co" target="_blank" rel="noopener">labs.co</a>). <strong>Zeus</strong> · The Almighty Protocol (<a href="https://zeus.labs.vc" target="_blank" rel="noopener">zeus.labs.vc</a>). 30 years in tech. Retinitis Pigmentosa (RP25).
-        </p>
-
-        <div class="profile-meta">
-          <span class="profile-meta-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            London, England
-          </span>
-        </div>
-      </div>
-    </div>
+    <h1>Eugene Gordeev</h1>
+    <p class="bio">
+      Founded <a href="https://labs.vc">Labs VC</a> — AI Venture Studio. Building <a href="https://labs.co">Labs</a> — The Index of AI Market, and <a href="https://zeus.labs.vc">Zeus</a> — The Almighty Protocol. 30 years in tech. Blockchain evangelist since 2013. Retinitis Pigmentosa (RP25).
+    </p>
+    <p class="meta">
+      <span>London</span>
+      <span><a href="https://t.me/LabsVC">Telegram</a></span>
+      <span><a href="https://x.com/egordeev">X</a></span>
+      <span><a href="https://github.com/g0rd33v">GitHub</a></span>
+      <span><a href="https://atom.me/eugene">Contact</a></span>
+    </p>
   </header>
 
-  <!-- ABOUT THIS SPACE -->
-  <section class="about-space">
-    <div class="section-head">
-      <span class="section-title">About this space</span>
-    </div>
-    <h2 class="space-name">Backstage</h2>
-    <p class="space-desc">Small ideas, built in hours or days. Thrown at the wall to see what sticks. Engineering fitness for the brain — a way to stay close to how the current stack actually works.</p>
+  <section class="space">
+    <h2>Backstage</h2>
+    <p>Small ideas, built in hours or days. Thrown at the wall to see what sticks. Engineering fitness for the brain — a way to stay close to how the current stack actually works.</p>
   </section>
 
-  <!-- REPOS -->
   <section>
-    <div class="section-head">
-      <span class="section-title">Public Repositories</span>
-      <span class="section-count" id="count">loading…</span>
-    </div>
-
-    <ul class="projects" id="projects">
-      <li class="skeleton"><div class="skel-line w-30"></div><div class="skel-line w-80"></div><div class="skel-line w-60"></div></li>
-      <li class="skeleton"><div class="skel-line w-30"></div><div class="skel-line w-80"></div><div class="skel-line w-60"></div></li>
-      <li class="skeleton"><div class="skel-line w-30"></div><div class="skel-line w-80"></div><div class="skel-line w-60"></div></li>
-    </ul>
+    <div class="section-title">Projects</div>
+    <ul class="projects" id="projects"></ul>
   </section>
 
-  <!-- FOOTER -->
   <footer>
-    <span>Labs · beta.labs.vc</span>
-    <span id="year">2026</span>
+    Labs · beta.labs.vc
   </footer>
 
 </div>
 
-<!-- ICONS -->
-<template id="icon-launch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg></template>
-<template id="icon-github"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12a12 12 0 008.2 11.4c.6.1.82-.26.82-.58v-2c-3.33.73-4.03-1.6-4.03-1.6-.55-1.38-1.34-1.75-1.34-1.75-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.23-3.22-.13-.3-.53-1.52.12-3.17 0 0 1-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.29-1.23 3.29-1.23.66 1.65.25 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.3c0 .32.22.69.82.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z"/></svg></template>
-<template id="icon-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg></template>
-<template id="icon-star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></template>
-<template id="icon-fork"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M6 8.5v7M18 8.5c0 4-6 3.5-6 7.5"/></svg></template>
-<template id="icon-telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.334-.373-.121l-6.869 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.566-4.458c.538-.196 1.006.128.832.941z"/></svg></template>
-
 <script>
-/* ═══════════════════════════════════════════════════════════════════
-   LIVE MIRROR — github.com/g0rd33v
-   Auto-fetches public repos on load. No backend needed.
-   ═══════════════════════════════════════════════════════════════════ */
-
-const GITHUB_USER = 'g0rd33v';
-const API = `https://api.github.com/users/${GITHUB_USER}/repos?sort=updated&per_page=100`;
-const USER_API = `https://api.github.com/users/${GITHUB_USER}`;
-
-// Known production URLs per repo (extend as more projects go live)
-const LIVE_URLS = {
-  'wizrag': 'https://wr.ag',
-  'zeus-protocol': 'https://zeus.labs.vc'
-};
-
-// Telegram mini-app URLs — render a separate action button with the Telegram icon
-const MINI_APP_URLS = {
-  'silence': 'https://t.me/LabsRobot/silence'
-};
-
-// Status override per repo. Default logic: 'beta' if has description, else 'dev'.
-const STATUS_OVERRIDE = {
-  'wizrag': 'live',
-  'zeus-protocol': 'live',
-  'silence': 'live',
-  'party': 'dev',
-  'qoin': 'dev'
-};
-
-// Custom descriptions (richer than GitHub's one-liner). Falls back to GitHub description if not listed.
-const DESCRIPTION_OVERRIDE = {
-  'wizrag': 'A URL that any AI can read from, write to, and browse as a wiki. Cross-chat knowledge that survives every session — ChatGPT, Claude, Grok, or any LLM.',
-  'zeus-protocol': 'A protocol for extending a single human being beyond natural limits. AI across seven domains — cognitive, creative, economic, physical, social, emotional, temporal. For life, and after.',
-  'silence': 'The anti-productivity tracker. Measures how much of your day still belongs to you — not to work, not to the feed, not to the optimization. Five modes, on-device sensing, five-star ratings, a stars-over-bars log that makes your quality of life visible. Everyone deserves a moment alone, just to be what they are in this world.',
-  'party': 'There are no messengers anymore. Just agents. Every agent holds court in its own room; humans walk in with Face ID and a link. Rooms live while anyone stays, then vanish.',
-  'qoin': 'Single-file Ethereum wallet. Face ID is the key. Agents propose transactions as links; you confirm with your face. One face, unlimited wallets.'
-};
-
-// GitHub-ish language colors
-const LANG_COLORS = {
-  'HTML': '#e34c26',
-  'JavaScript': '#f1e05a',
-  'TypeScript': '#3178c6',
-  'Rust': '#dea584',
-  'Python': '#3572A5',
-  'Go': '#00ADD8',
-  'CSS': '#563d7c',
-  'Shell': '#89e051',
-  'Solidity': '#AA6746'
-};
-
-function icon(id) {
-  const tpl = document.getElementById(`icon-${id}`);
-  return tpl ? tpl.innerHTML : '';
-}
-
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/[&<>"']/g, c => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[c]));
-}
-
-function renderRepos(repos) {
-  const list = document.getElementById('projects');
-  const count = document.getElementById('count');
-
-  if (!repos.length) {
-    list.innerHTML = `<li class="error-state">No public repositories found.</li>`;
-    count.textContent = '00';
-    return;
+/* Static data — no animations, no API calls.
+   To add a project: edit this array and push. */
+const PROJECTS = [
+  {
+    name: 'silence',
+    description: 'The anti-productivity tracker. Measures how much of your day still belongs to you. Do nothing. Just be.',
+    updated: '2026-04-22',
+    links: {
+      beta: 'https://beta.labs.vc/silence/',
+      telegram: 'https://t.me/LabsRobot/silence',
+      github: 'https://github.com/g0rd33v/silence',
+      pages: null
+    }
+  },
+  {
+    name: 'wizrag',
+    description: 'Universal Retrieval Protocol — one URL any AI can read from, write to, and browse as a wiki. Cross-chat knowledge for ChatGPT, Claude, Grok, any LLM.',
+    updated: '2026-04-22',
+    links: {
+      beta: 'https://beta.labs.vc/wizrag/',
+      site: 'https://wizrag.com',
+      github: 'https://github.com/g0rd33v/wizrag',
+      pages: 'https://g0rd33v.github.io/wizrag/'
+    }
+  },
+  {
+    name: 'party',
+    description: 'There are no messengers anymore. Just agents. Every agent holds court in its own room; humans walk in with Face ID and a link. Rooms live while anyone stays, then vanish.',
+    updated: '2026-04-21',
+    links: {
+      beta: 'https://beta.labs.vc/party/',
+      github: 'https://github.com/g0rd33v/party',
+      pages: 'https://g0rd33v.github.io/party/'
+    }
+  },
+  {
+    name: 'qoin',
+    description: 'Single-file Ethereum wallet. Face ID is the key. Agents propose transactions as links; you confirm with your face. One face, unlimited wallets.',
+    updated: '2026-04-21',
+    links: {
+      beta: 'https://beta.labs.vc/qoin/',
+      github: 'https://github.com/g0rd33v/qoin',
+      pages: 'https://g0rd33v.github.io/qoin/'
+    }
+  },
+  {
+    name: 'zeus-protocol',
+    description: 'A protocol for extending a single human being beyond natural limits. AI across seven domains — cognitive, creative, economic, physical, social, emotional, temporal. For life, and after.',
+    updated: '2026-04-18',
+    links: {
+      site: 'https://zeus.labs.vc',
+      beta: 'https://beta.labs.vc/zeus-protocol/',
+      github: 'https://github.com/g0rd33v/zk�s-protocol',
+      pages: 'https://g0rd33v.github.io/zeus-protocol/'
+    }
   }
+];
 
-  const n = String(repos.length).padStart(2, '0');
-  count.textContent = `${n} repos`;
+const LABEL = {
+  beta: 'beta.labs.vc',
+  github: 'github',
+  pages: 'github pages',
+  telegram: 'telegram',
+  site: 'live site'
+};
+const ORDER = ['site', 'beta', 'telegram', 'pages', 'github'];
 
-  list.innerHTML = repos.map((r, i) => {
-    const status = STATUS_OVERRIDE[r.name] || (r.description ? 'beta' : 'dev');
-    const description = DESCRIPTION_OVERRIDE[r.name] || r.description;
-    const langColor = LANG_COLORS[r.language] || '#9a9a9a';
-    const localPath = `/${r.name}/`;
-    const liveUrl = LIVE_URLS[r.name];
-    const miniAppUrl = MINI_APP_URLS[r.name];
-    const updated = new Date(r.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
-    return `
-      <li class="project" style="animation-delay: ${0.5 + i * 0.08}s">
-        <div class="project-status">
-          <span class="status-dot ${status}" aria-hidden="true"></span>
-          <span class="status-label">${status}</span>
-        </div>
-        <div class="project-main">
-          <a href="${esc(localPath)}" class="project-name">
-            ${esc(r.name)}
-            <span class="project-arrow" aria-hidden="true">${icon('arrow')}</span>
-          </a>
-          ${description ? `<p class="project-desc">${esc(description)}</p>` : ''}
-          <div class="project-tags">
-            ${r.language ? `<span class="tag"><span class="lang-dot" style="background: ${langColor}"></span>${esc(r.language)}</span>` : ''}
-            ${r.stargazers_count > 0 ? `<span class="tag">${icon('star')}${r.stargazers_count}</span>` : ''}
-            ${r.forks_count > 0 ? `<span class="tag">${icon('fork')}${r.forks_count}</span>` : ''}
-            <span class="tag">updated ${esc(updated)}</span>
-          </div>
-        </div>
-        <div class="project-actions">
-          <a href="${esc(localPath)}" class="action" aria-label="Launch ${esc(r.name)}">
-            ${icon('launch')}<span>launch</span>
-          </a>
-          ${liveUrl ? `<a href="${esc(liveUrl)}" class="action" target="_blank" rel="noopener" aria-label="${esc(r.name)} live site">
-            ${icon('arrow')}<span>live</span>
-          </a>` : ''}
-          ${miniAppUrl ? `<a href="${esc(miniAppUrl)}" class="action action-mini" target="_blank" rel="noopener" aria-label="${esc(r.name)} Telegram mini app">
-            ${icon('telegram')}<span>mini app</span>
-          </a>` : ''}
-          <a href="${esc(r.html_url)}" class="action" target="_blank" rel="noopener" aria-label="${esc(r.name)} on GitHub">
-            ${icon('github')}<span>source</span>
-          </a>
-        </div>
-      </li>
-    `;
-  }).join('');
-}
-
-function renderError(msg) {
-  const list = document.getElementById('projects');
-  const count = document.getElementById('count');
-  count.textContent = '—';
-  list.innerHTML = `
-    <li class="error-state">
-      ${esc(msg)}<br>
-      Browse directly on <a href="https://github.com/${GITHUB_USER}" target="_blank" rel="noopener">github.com/${GITHUB_USER}</a>.
+const list = document.getElementById('projects');
+list.innerHTML = PROJECTS.map(p => {
+  const links = ORDER
+    .filter(k => p.links[k] !== undefined)
+    .map(k => {
+      const url = p.links[k];
+      if (!url) return '';
+      return `<a href="${url}">${LABEL[k]}</a>`;
+    })
+    .filter(Boolean)
+    .join('');
+  const dt = new Date(p.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return `
+    <li class="project">
+      <div class="project-head">
+        <span class="project-name">${p.name}</span>
+        <span class="project-updated">${dt}</span>
+      </div>
+      <p class="project-desc">${p.description}</p>
+      <div class="links">${links}</div>
     </li>
   `;
-}
-
-async function fetchRepos() {
-  try {
-    const res = await fetch(API, { headers: { 'Accept': 'application/vnd.github+json' } });
-    if (!res.ok) throw new Error(`GitHub API returned ${res.status}`);
-    const repos = await res.json();
-    const filtered = repos
-      .filter(r => r.name !== 'beta')
-      .filter(r => !r.fork || r.stargazers_count > 0)
-      .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-    renderRepos(filtered);
-  } catch (err) {
-    console.error('[labs] repo fetch failed:', err);
-    renderError('Could not load repositories from GitHub.');
-  }
-}
-
-// ─── LIVE PROFILE MIRROR ──────────────────────────────────────────
-// Auto-linkify any *.tld pattern in free-form bio text.
-function linkifyBio(text) {
-  const escaped = esc(text);
-  return escaped.replace(
-    /\b([\w-]+(?:\.[\w-]+)*\.(?:vc|co|io|gg|ag|me|pro|com|net|org|app|so|xyz|dev|ai|fm|tv))\b/g,
-    (m) => `<a href="https://${m}" target="_blank" rel="noopener">${m}</a>`
-  );
-}
-
-async function fetchUser() {
-  try {
-    const res = await fetch(USER_API, { headers: { 'Accept': 'application/vnd.github+json' } });
-    if (!res.ok) throw new Error(`User API returned ${res.status}`);
-    const u = await res.json();
-
-    if (u.avatar_url) {
-      const av = document.querySelector('.avatar');
-      if (av) av.style.backgroundImage = `url('${u.avatar_url}')`;
-    }
-
-    if (u.name) {
-      const nameEl = document.querySelector('.profile-name');
-      if (nameEl) nameEl.textContent = u.name;
-    }
-
-    if (u.login) {
-      const handleEl = document.querySelector('.profile-handle');
-      if (handleEl) {
-        const tw = u.twitter_username ? ` · @${u.twitter_username}` : '';
-        handleEl.textContent = `@${u.login}${tw}`;
-      }
-    }
-
-    if (u.bio) {
-      const bioEl = document.querySelector('.profile-bio');
-      if (bioEl) bioEl.innerHTML = linkifyBio(u.bio);
-    }
-
-    if (u.location) {
-      const locItem = document.querySelector('.profile-meta-item');
-      if (locItem) {
-        const textNodes = Array.from(locItem.childNodes).filter(n => n.nodeType === 3 && n.textContent.trim());
-        if (textNodes.length) textNodes[textNodes.length - 1].textContent = ' ' + u.location;
-      }
-    }
-  } catch (err) {
-    console.error('[labs] user fetch failed, keeping static fallback:', err);
-  }
-}
-
-fetchUser();
-fetchRepos();
-document.getElementById('year').textContent = new Date().getFullYear();
+}).join('');
 </script>
 
 </body>
