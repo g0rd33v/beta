@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BRICKS '86</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: #111; overflow: hidden;
+    touch-action: none;
+  }
+  #monitor {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    /* 4:3 CRT face, like the era's monitors */
+    width: min(96vw, calc(96vh * 4 / 3));
+    aspect-ratio: 4 / 3;
+    background: #000;
+    box-shadow: 0 0 60px rgba(0,0,0,.9);
+  }
+  #screen {
+    width: 100%; height: 100%; display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  #crt {
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px,
+      rgba(0,0,0,.22) 2px, rgba(0,0,0,.22) 3px
+    );
+    box-shadow: inset 0 0 90px rgba(0,0,0,.55);
+  }
+  #crt.off { display: none; }
+</style>
+</head>
+<body>
+<div id="monitor">
+  <canvas id="screen" width="640" height="400"></canvas>
+  <div id="crt"></div>
+</div>
+<script>
+'use strict';
+
+/* ================= CGA palette (RGBI) ================= */
+const CGA = {
+  black:'#000000', blue:'#0000AA', green:'#00AA00', cyan:'#00AAAA',
+  red:'#AA0000', magenta:'#AA00AA', brown:'#AA5500', lgray:'#AAAAAA',
+  dgray:'#555555', lblue:'#5555FF', lgreen:'#55FF55', lcyan:'#55FFFF',
+  lred:'#FF5555', lmagenta:'#FF55FF', yellow:'#FFFF55', white:'#FFFFFF'
+};
+
+/* ================= 8x8 bitmap font (CP437-flavored), doubled to 8x16 ================= */
+const FONT = {
+  'A':[0x30,0x78,0xCC,0xCC,0xFC,0xCC,0xCC,0x00],'B':[0xFC,0x66,0x66,0x7C,0x66,0x66,0xFC,0x00],
+  'C':[0x3C,0x66,0xC0,0xC0,0xC0,0x66,0x3C,0x00],'D':[0xF8,0x6C,0x66,0x66,0x66,0x6C,0xF8,0x00],
+  'E':[0xFE,0x62,0x68,0x78,0x68,0x62,0xFE,0x00],'F':[0xFE,0x62,0x68,0x78,0x68,0x60,0xF0,0x00],
+  'G':[0x3C,0x66,0xC0,0xC0,0xCE,0x66,0x3E,0x00],'H':[0xCC,0xCC,0xCC,0xFC,0xCC,0xCC,0xCC,0x00],
+  'I':[0x78,0x30,0x30,0x30,0x30,0x30,0x78,0x00],'J':[0x1E,0x0C,0x0C,0x0C,0xCC,0xCC,0x78,0x00],
+  'K':[0xE6,0x66,0x6C,0x78,0x6C,0x66,0xE6,0x00],'L':[0xF0,0x60,0x60,0x60,0x62,0x66,0xFE,0x00],
+  'M':[0xC6,0xEE,0xFE,0xFE,0xD6,0xC6,0xC6,0x00],'N':[0xC6,0xE6,0xF6,0xDE,0xCE,0xC6,0xC6,0x00],
+  'O':[0x38,0x6C,0xC6,0xC6,0xC6,0x6C,0x38,0x00],'P':[0xFC,0x66,0x66,0x7C,0x60,0x60,0xF0,0x00],
+  'Q':[0x78,0xCC,0xCC,0xCC,0xDC,0x78,0x1C,0x00],'R':[0xFC,0x66,0x66,0x7C,0x6C,0x66,0xE6,0x00],
+  'S':[0x78,0xCC,0xE0,0x70,0x1C,0xCC,0x78,0x00],'T':[0xFC,0xB4,0x30,0x30,0x30,0x30,0x78,0x00],
+  'U':[0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xFC,0x00],'V':[0xCC,0xCC,0xCC,0xCC,0xCC,0x78,0x30,0x00],
+  'W':[0xC6,0xC6,0xC6,0xD6,0xFE,0xEE,0xC6,0x00],'X':[0xC6,0xC6,0x6C,0x38,0x38,0x6C,0xC6,0x00],
+  'Y':[0xCC,0xCC,0xCC,0x78,0x30,0x30,0x78,0x00],'Z':[0xFE,0xC6,0x8C,0x18,0x32,0x66,0xFE,0x00],
+  '0':[0x7C,0xC6,0xCE,0xDE,0xF6,0xE6,0x7C,0x00],'1':[0x30,0x70,0x30,0x30,0x30,0x30,0xFC,0x00],
+  '2':[0x78,0xCC,0x0C,0x38,0x60,0xCC,0xFC,0x00],'3':[0x78,0xCC,0x0C,0x38,0x0C,0xCC,0x78,0x00],
+  '4':[0x1C,0x3C,0x6C,0xCC,0xFE,0x0C,0x1E,0x00],'5':[0xFC,0xC0,0xF8,0x0C,0x0C,0xCC,0x78,0x00],
+  '6':[0x38,0x60,0xC0,0xF8,0xCC,0xCC,0x78,0x00],'7':[0xFC,0xCC,0x0C,0x18,0x30,0x30,0x30,0x00],
+  '8':[0x78,0xCC,0xCC,0x78,0xCC,0xCC,0x78,0x00],'9':[0x78,0xCC,0xCC,0x7C,0x0C,0x18,0x70,0x00],
+  ' ':[0,0,0,0,0,0,0,0],
+  "'":[0x30,0x30,0x60,0x00,0x00,0x00,0x00,0x00],
+  '!':[0x30,0x78,0x78,0x30,0x30,0x00,0x30,0x00],
+  '.':[0x00,0x00,0x00,0x00,0x00,0x30,0x30,0x00],
+  ',':[0x00,0x00,0x00,0x00,0x00,0x30,0x30,0x60],
+  ':':[0x00,0x30,0x30,0x00,0x00,0x30,0x30,0x00],
+  '/':[0x06,0x0C,0x18,0x30,0x60,0xC0,0x80,0x00],
+  '-':[0x00,0x00,0x00,0xFC,0x00,0x00,0x00,0x00],
+  '&':[0x38,0x6C,0x38,0x76,0xDC,0xCC,0x76,0x00],
+  '←':[0x00,0x18,0x30,0x7E,0x30,0x18,0x00,0x00],
+  '→':[0x00,0x18,0x0C,0x7E,0x0C,0x18,0x00,0x00],
+  '▮':[0x00,0x7E,0x7E,0x7E,0x7E,0x7E,0x7E,0x00],
+  '■':[0x00,0x00,0x3C,0x3C,0x3C,0x3C,0x00,0x00]
+};
+
+/* ================= Layout constants (80x25 text grid, 8x16 cells, 640x400 px) ================= */
+const CELL_W = 8, CELL_H = 16, COLS = 80, ROWS = 25;
+const W = COLS * CELL_W, H = ROWS * CELL_H;
+const WALL_TOP_Y = 2 * CELL_H;          // below status row + top wall row
+const WALL_LEFT_X = 1 * CELL_W;
+const WALL_RIGHT_X = 79 * CELL_W;
+const BRICK_ROWS = 8, BRICK_COLS = 13;
+const BRICK_W = 5 * CELL_W, BRICK_H = CELL_H, BRICK_GAP = CELL_W;
+const BRICK_TOP_ROW = 4;                 // text row of first brick row
+const BRICK_LEFT_COL = 1;
+const PADDLE_W = 8 * CELL_W, PADDLE_H = 8;
+const PADDLE_Y = 23 * CELL_H + 4;
+const BALL_SIZE = 8;
+const ROW_SCORES = [7,7,5,5,3,3,1,1];    // top row first
+
+/* ================= Color schemes ================= */
+/* density: 4=█ 3=▓ 2=▒ 1=░ — mono schemes tell rows apart by texture */
+const SCHEMES = [
+  { name:'COLOR',
+    rows:[{c:CGA.red,d:4},{c:CGA.yellow,d:4},{c:CGA.magenta,d:4},{c:CGA.green,d:4},
+          {c:CGA.cyan,d:4},{c:CGA.lblue,d:4},{c:CGA.brown,d:4},{c:CGA.lgray,d:4}],
+    paddle:CGA.white, ball:CGA.white, wall:CGA.lgray, text:CGA.lgray, accent:CGA.white },
+  { name:'GREEN',
+    rows:[{c:CGA.lgreen,d:4},{c:CGA.lgreen,d:4},{c:CGA.green,d:3},{c:CGA.green,d:3},
+          {c:CGA.green,d:2},{c:CGA.green,d:2},{c:CGA.green,d:1},{c:CGA.green,d:1}],
+    paddle:CGA.lgreen, ball:CGA.lgreen, wall:CGA.green, text:CGA.green, accent:CGA.lgreen },
+  { name:'AMBER',
+    rows:[{c:CGA.yellow,d:4},{c:CGA.yellow,d:4},{c:CGA.brown,d:3},{c:CGA.brown,d:3},
+          {c:CGA.brown,d:2},{c:CGA.brown,d:2},{c:CGA.brown,d:1},{c:CGA.brown,d:1}],
+    paddle:CGA.yellow, ball:CGA.yellow, wall:CGA.brown, text:CGA.brown, accent:CGA.yellow },
+  { name:'B&W',
+    rows:[{c:CGA.white,d:4},{c:CGA.white,d:4},{c:CGA.lgray,d:3},{c:CGA.lgray,d:3},
+          {c:CGA.lgray,d:2},{c:CGA.lgray,d:2},{c:CGA.lgray,d:1},{c:CGA.lgray,d:1}],
+    paddle:CGA.white, ball:CGA.white, wall:CGA.lgray, text:CGA.lgray, accent:CGA.white }
+];
+
+/* ================= Persistence (defensive) ================= */
+const store = {
+  get(key, fallback) {
+    try { const v = localStorage.getItem(key); return v === null ? fallback : JSON.parse(v); }
+    catch (e) { return fallback; }
+  },
+  set(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+  }
+};
+
+/* ================= PC speaker: one square-wave voice, new tone cuts the old ================= */
+const speaker = {
+  ctx: null, osc: null, gain: null, available: true,
+  muted: !!store.get('bricks86.muted', false),
+  ensure() {
+    if (this.ctx || !this.available) return;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) { this.available = false; return; }
+      this.ctx = new AC();
+      this.gain = this.ctx.createGain();
+      this.gain.gain.value = 0.04;
+      this.gain.connect(this.ctx.destination);
+    } catch (e) { this.available = false; }
+  },
+  stop() {
+    if (this.osc) { try { this.osc.stop(); } catch (e) {} this.osc = null; }
+  },
+  /* play a list of [freqHz, durMs] segments as one continuous voice */
+  play(segments, sweepTo) {
+    if (this.muted || !this.available) return;
+    this.ensure();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    this.stop();
+    const osc = this.ctx.createOscillator();
+    osc.type = 'square';
+    let t = this.ctx.currentTime;
+    osc.frequency.setValueAtTime(segments[0][0], t);
+    for (const [freq, dur] of segments) {
+      osc.frequency.setValueAtTime(freq, t);
+      if (sweepTo !== undefined && segments.length === 1)
+        osc.frequency.linearRampToValueAtTime(sweepTo, t + dur / 1000);
+      t += dur / 1000;
+    }
+    osc.connect(this.gain);
+    osc.start();
+    osc.stop(t);
+    this.osc = osc;
+  },
+  beep(freq, ms) { this.play([[freq, ms]]); },
+  sweep(from, to, ms) { this.play([[from, ms]], to); }
+};
+const SFX = {
+  paddle: () => speaker.beep(220, 30),
+  wall:   () => speaker.beep(160, 20),
+  brick:  (row) => speaker.beep(1200 - row * 100, 25),  // higher rows ring higher
+  serve:  () => speaker.play([[440, 30], [880, 30]]),
+  lost:   () => speaker.sweep(800, 150, 350),
+  clear:  () => speaker.play([[523, 120], [659, 120], [784, 120], [1047, 140]]),
+  over:   () => speaker.play([[392, 220], [311, 220], [196, 260]]),
+  boot:   () => speaker.beep(880, 60),
+  clatter:() => speaker.play([[97, 18], [143, 14], [83, 20], [127, 12], [101, 16]])
+};
+
+/* ================= Rendering ================= */
+const canvas = document.getElementById('screen');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+const crtDiv = document.getElementById('crt');
+
+function drawText(col, row, str, color, scale) {
+  const s = scale || 1;
+  ctx.fillStyle = color;
+  let x = col * CELL_W;
+  const y = row * CELL_H;
+  for (const ch of str) {
+    const glyph = FONT[ch] || FONT[' '];
+    for (let gy = 0; gy < 8; gy++) {
+      const bits = glyph[gy];
+      for (let gx = 0; gx < 8; gx++) {
+        if (bits & (0x80 >> gx)) ctx.fillRect(x + gx * s, y + gy * 2 * s, s, 2 * s);
+      }
+    }
+    x += CELL_W * s;
+  }
+}
+function centerText(row, str, color, scale) {
+  const s = scale || 1;
+  drawText(Math.floor((COLS - str.length * s) / 2), row, str, color, s);
+}
+
+/* dithered fill at 2px granularity — density 1..4 maps to ░ ▒ ▓ █ */
+function ditherRect(x, y, w, h, color, density) {
+  ctx.fillStyle = color;
+  if (density >= 4) { ctx.fillRect(x, y, w, h); return; }
+  for (let py = 0; py < h; py += 2) {
+    for (let px = 0; px < w; px += 2) {
+      const cx = px >> 1, cy = py >> 1;
+      let on = false;
+      if (density === 3) on = !((cx % 2 === 1) && (cy % 2 === 1));
+      else if (density === 2) on = (cx + cy) % 2 === 0;
+      else on = (cx % 2 === 0) && (cy % 2 === 0);
+      if (on) ctx.fillRect(x + px, y + py, 2, 2);
+    }
+  }
+}
+
+/* ================= Game state ================= */
+const S = { BOOT:0, TITLE:1, SERVE:2, PLAYING:3, LEVEL_CLEAR:4, PAUSED:5, GAME_OVER:6 };
+const reducedMotion = window.matchMedia &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const game = {
+  state: S.BOOT,
+  schemeIdx: (() => {
+    const name = store.get('bricks86.scheme', 'COLOR');
+    const i = SCHEMES.findIndex(s => s.name === name);
+    return i >= 0 ? i : 0;
+  })(),
+  crt: true,
+  score: 0,
+  highScore: Number(store.get('bricks86.highscore', 0)) || 0,
+  balls: 5,
+  level: 1,
+  wall: [],            // BRICK_ROWS x BRICK_COLS booleans
+  remaining: 0,
+  newHigh: false,
+  serveDir: 1,
+  hitCount: 0,         // brick hits this ball-in-play
+  topRowHit: false,    // 7-point row hit this ball-in-play
+  speedStep: 0,
+  stateTimer: 0,       // seconds left in timed states (LEVEL_CLEAR)
+  pausedFrom: S.PLAYING,
+  autoPaused: false,
+  escArmed: 0,         // seconds left in the "press ESC again" window
+  notice: '', noticeTimer: 0,
+  bootTime: 0, bootBeeped: false, bootClattered: false,
+  paddle: { x: (W - PADDLE_W) / 2 },
+  ball: { x: 0, y: 0, vx: 0, vy: 0 }
+};
+const scheme = () => SCHEMES[game.schemeIdx];
+
+function baseSpeed() { return Math.min(170 * Math.pow(1.12, game.level - 1), 420); }
+function ballSpeed() { return Math.min(baseSpeed() * Math.pow(1.12, game.speedStep), 560); }
+
+function buildWall() {
+  game.wall = [];
+  for (let r = 0; r < BRICK_ROWS; r++) game.wall.push(new Array(BRICK_COLS).fill(true));
+  game.remaining = BRICK_ROWS * BRICK_COLS;
+}
+function brickRect(r, c) {
+  return {
+    x: (BRICK_LEFT_COL + c * 6) * CELL_W,
+    y: (BRICK_TOP_ROW + r) * CELL_H,
+    w: BRICK_W, h: BRICK_H
+  };
+}
+
+function resetGame() {
+  game.score = 0; game.balls = 5; game.level = 1;
+  game.newHigh = false; game.serveDir = 1;
+  buildWall();
+  toServe();
+}
+function toServe() {
+  game.state = S.SERVE;
+  game.speedStep = 0; game.hitCount = 0; game.topRowHit = false;
+  game.ball.vx = 0; game.ball.vy = 0;
+  keys.left = keys.right = false;
+}
+function launchBall() {
+  const angle = Math.PI / 3;   // 60 degrees from horizontal
+  const v = ballSpeed();
+  game.ball.x = game.paddle.x + PADDLE_W / 2 - BALL_SIZE / 2;
+  game.ball.y = PADDLE_Y - BALL_SIZE - 1;
+  game.ball.vx = Math.cos(angle) * v * game.serveDir;
+  game.ball.vy = -Math.sin(angle) * v;
+  game.serveDir = -game.serveDir;
+  game.state = S.PLAYING;
+  SFX.serve();
+}
+function applySpeed() {
+  const v = ballSpeed();
+  const cur = Math.hypot(game.ball.vx, game.ball.vy) || 1;
+  game.ball.vx = game.ball.vx / cur * v;
+  game.ball.vy = game.ball.vy / cur * v;
+}
+function onBrickDestroyed(r) {
+  game.score += ROW_SCORES[r];
+  game.remaining--;
+  game.hitCount++;
+  SFX.brick(r);
+  let stepped = false;
+  if (game.hitCount === 4 || game.hitCount === 12) { game.speedStep++; stepped = true; }
+  if (r < 2 && !game.topRowHit) { game.topRowHit = true; game.speedStep++; stepped = true; }
+  if (stepped) applySpeed();
+  if (game.remaining === 0) {
+    game.state = S.LEVEL_CLEAR;
+    game.stateTimer = 1.5;
+    SFX.clear();
+  }
+}
+function loseBall() {
+  game.balls--;
+  SFX.lost();
+  if (game.balls > 0) {
+    toServe();
+  } else {
+    game.state = S.GAME_OVER;
+    if (game.score > game.highScore) {
+      game.highScore = game.score;
+      game.newHigh = true;
+      store.set('bricks86.highscore', game.highScore);
+    }
+    SFX.over();
+  }
+}
+
+/* ================= Physics (fixed 120 Hz steps) ================= */
+const SIM_DT = 1 / 120;
+const keys = { left: false, right: false };
+
+function stepPaddle(dt) {
+  const PADDLE_SPEED = 420;
+  let dx = 0;
+  if (keys.left) dx -= PADDLE_SPEED * dt;
+  if (keys.right) dx += PADDLE_SPEED * dt;
+  game.paddle.x = Math.max(WALL_LEFT_X,
+    Math.min(WALL_RIGHT_X - PADDLE_W, game.paddle.x + dx));
+}
+
+function stepBall(dt) {
+  const b = game.ball;
+  const prevY = b.y, prevX = b.x;
+  b.x += b.vx * dt;
+  b.y += b.vy * dt;
+
+  /* walls */
+  if (b.x < WALL_LEFT_X) { b.x = WALL_LEFT_X; b.vx = Math.abs(b.vx); SFX.wall(); }
+  if (b.x + BALL_SIZE > WALL_RIGHT_X) { b.x = WALL_RIGHT_X - BALL_SIZE; b.vx = -Math.abs(b.vx); SFX.wall(); }
+  if (b.y < WALL_TOP_Y) { b.y = WALL_TOP_Y; b.vy = Math.abs(b.vy); SFX.wall(); }
+
+  /* lost past the bottom */
+  if (b.y > H) { loseBall(); return; }
+
+  /* bricks — destroy at most one per contact frame (rule 4.1.5.6) */
+  const rowLo = Math.max(0, Math.floor(b.y / CELL_H) - BRICK_TOP_ROW - 1);
+  const rowHi = Math.min(BRICK_ROWS - 1, Math.floor((b.y + BALL_SIZE) / CELL_H) - BRICK_TOP_ROW + 1);
+  outer:
+  for (let r = rowLo; r <= rowHi; r++) {
+    if (r < 0 || r >= BRICK_ROWS) continue;
+    for (let c = 0; c < BRICK_COLS; c++) {
+      if (!game.wall[r][c]) continue;
+      const br = brickRect(r, c);
+      if (b.x < br.x + br.w && b.x + BALL_SIZE > br.x &&
+          b.y < br.y + br.h && b.y + BALL_SIZE > br.y) {
+        /* reflect on the axis of penetration; corner hits resolve vertically (edge case 4.1.6.1) */
+        const cameFromAbove = prevY + BALL_SIZE <= br.y;
+        const cameFromBelow = prevY >= br.y + br.h;
+        if (cameFromAbove) { b.vy = -Math.abs(b.vy); b.y = br.y - BALL_SIZE; }
+        else if (cameFromBelow) { b.vy = Math.abs(b.vy); b.y = br.y + br.h; }
+        else if (prevX + BALL_SIZE <= br.x) { b.vx = -Math.abs(b.vx); b.x = br.x - BALL_SIZE; }
+        else if (prevX >= br.x + br.w) { b.vx = Math.abs(b.vx); b.x = br.x + br.w; }
+        else { b.vy = -b.vy; }
+        game.wall[r][c] = false;
+        onBrickDestroyed(r);
+        break outer;
+      }
+    }
+  }
+  if (game.state !== S.PLAYING) return;
+
+  /* paddle */
+  const p = game.paddle;
+  if (b.vy > 0 &&
+      b.x < p.x + PADDLE_W && b.x + BALL_SIZE > p.x &&
+      b.y + BALL_SIZE > PADDLE_Y && b.y < PADDLE_Y + PADDLE_H) {
+    if (prevY + BALL_SIZE <= PADDLE_Y) {
+      /* top-surface hit: 8 zones, 70° (center) to 30° (edge) from horizontal */
+      let t = ((b.x + BALL_SIZE / 2) - (p.x + PADDLE_W / 2)) / (PADDLE_W / 2);
+      t = Math.max(-0.999, Math.min(0.999, t));
+      const zone = Math.floor(t * 4);                 // -4..3
+      const tq = (zone + 0.5) / 4;                     // zone center, -0.875..0.875
+      const angleH = (70 - Math.abs(tq) * 40) * Math.PI / 180;
+      const v = Math.hypot(b.vx, b.vy);
+      const dir = tq === 0 ? (b.vx >= 0 ? 1 : -1) : Math.sign(tq);
+      b.vx = Math.cos(angleH) * v * dir;
+      b.vy = -Math.sin(angleH) * v;
+      b.y = PADDLE_Y - BALL_SIZE;
+    } else {
+      /* side clip: never trap the ball inside the paddle (edge case 4.1.6.2) */
+      b.vx = (b.x + BALL_SIZE / 2 < p.x + PADDLE_W / 2) ? -Math.abs(b.vx) : Math.abs(b.vx);
+      b.vy = -Math.abs(b.vy);
+    }
+    SFX.paddle();
+  }
+
+  /* shallow-angle guard (edge case 4.1.6.3) */
+  const v = Math.hypot(b.vx, b.vy);
+  const minVy = v * 0.25;
+  if (Math.abs(b.vy) < minVy) {
+    b.vy = (b.vy < 0 ? -1 : 1) * minVy;
+    const vxMag = Math.sqrt(Math.max(0, v * v - b.vy * b.vy));
+    b.vx = (b.vx < 0 ? -1 : 1) * vxMag;
+  }
+}
+
+/* ================= Boot sequence ================= */
+const BOOT_LINES = [
+  { at: 0.0, text: 'GORDEEV SYSTEMS XT-CLONE BIOS V2.5' },
+  { at: 0.3, text: 'COPYRIGHT 1985 ALL RIGHTS RESERVED' }
+];
+function bootMemoryKB(t) {
+  /* 64 KB steps, one every 150 ms, from 0.8 s */
+  if (t < 0.8) return 0;
+  return Math.min(640, Math.floor((t - 0.8) / 0.15 + 1) * 64);
+}
+function stepBoot(dt) {
+  game.bootTime += dt;
+  const t = game.bootTime;
+  if (!game.bootBeeped && bootMemoryKB(t) >= 640) { game.bootBeeped = true; SFX.boot(); }
+  if (!game.bootClattered && t >= 2.6) { game.bootClattered = true; SFX.clatter(); }
+  if (t >= 3.4) game.state = S.TITLE;
+}
+function skipBoot() { game.state = S.TITLE; speaker.stop(); }
+if (reducedMotion) game.state = S.TITLE;   // NFR 8.3: no boot animation
+
+/* ================= Input ================= */
+function schemeCycle() {
+  game.schemeIdx = (game.schemeIdx + 1) % SCHEMES.length;
+  store.set('bricks86.scheme', scheme().name);
+  rebuildTiles();
+}
+function toggleMute() {
+  speaker.muted = !speaker.muted;
+  store.set('bricks86.muted', speaker.muted);
+  if (speaker.muted) speaker.stop(); else speaker.beep(660, 40);
+}
+function toggleCrt() {
+  game.crt = !game.crt;
+  crtDiv.classList.toggle('off', !game.crt);
+}
+function quitToTitle() {
+  game.state = S.TITLE;
+  game.escArmed = 0;
+  speaker.stop();
+}
+
+document.addEventListener('keydown', (e) => {
+  speaker.ensure();
+  if (['ArrowLeft','ArrowRight','Space',' '].includes(e.key) || e.code === 'Space')
+    e.preventDefault();
+  if (e.repeat) {
+    if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = true;
+    if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = true;
+    return;
+  }
+  if (game.state === S.BOOT) { skipBoot(); return; }
+
+  switch (e.code) {
+    case 'ArrowLeft': case 'KeyA': keys.left = true; break;
+    case 'ArrowRight': case 'KeyD': keys.right = true; break;
+    case 'KeyM': toggleMute(); break;
+    case 'KeyC': schemeCycle(); break;
+    case 'KeyT': toggleCrt(); break;
+    case 'KeyP':
+      if (game.state === S.PLAYING || game.state === S.SERVE) {
+        game.pausedFrom = game.state; game.state = S.PAUSED;
+        game.autoPaused = false; speaker.stop();
+      } else if (game.state === S.PAUSED) {
+        game.state = game.pausedFrom;
+      }
+      break;
+    case 'Escape':
+      if (game.state === S.SERVE || game.state === S.PLAYING || game.state === S.PAUSED) {
+        if (game.escArmed > 0) quitToTitle();
+        else game.escArmed = 2;
+      }
+      break;
+    case 'Space':
+      if (game.state === S.TITLE) resetGame();
+      else if (game.state === S.SERVE) launchBall();       // idempotent per serve (4.1.6.6)
+      else if (game.state === S.GAME_OVER) quitToTitle();
+      break;
+  }
+});
+document.addEventListener('keyup', (e) => {
+  if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
+  if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
+});
+window.addEventListener('blur', () => {
+  if (game.state === S.PLAYING) {
+    game.pausedFrom = S.PLAYING; game.state = S.PAUSED;
+    game.autoPaused = true; speaker.stop();
+  }
+  keys.left = keys.right = false;
+});
+
+/* touch / mouse fallback: drag to move, tap acts like SPACE */
+let pointerDown = false;
+canvas.addEventListener('pointerdown', (e) => {
+  speaker.ensure();
+  pointerDown = true;
+  if (game.state === S.BOOT) skipBoot();
+  else if (game.state === S.TITLE) resetGame();
+  else if (game.state === S.SERVE) launchBall();
+  else if (game.state === S.GAME_OVER) quitToTitle();
+});
+canvas.addEventListener('pointerup', () => { pointerDown = false; });
+canvas.addEventListener('pointermove', (e) => {
+  if (!pointerDown && e.pointerType === 'mouse') return;
+  if (game.state !== S.PLAYING && game.state !== S.SERVE) return;
+  const rect = canvas.getBoundingClientRect();
+  const gx = (e.clientX - rect.left) / rect.width * W;
+  game.paddle.x = Math.max(WALL_LEFT_X, Math.min(WALL_RIGHT_X - PADDLE_W, gx - PADDLE_W / 2));
+});
+
+/* ================= Prerendered tiles ================= */
+let brickTiles = [], wallTile = null;
+function rebuildTiles() {
+  const sc = scheme();
+  brickTiles = sc.rows.map((row) => {
+    const t = document.createElement('canvas');
+    t.width = BRICK_W; t.height = BRICK_H;
+    const tc = t.getContext('2d');
+    const saved = ctx;
+    /* reuse ditherRect against the tile context */
+    tc.fillStyle = row.c;
+    if (row.d >= 4) tc.fillRect(0, 0, BRICK_W, BRICK_H);
+    else {
+      for (let py = 0; py < BRICK_H; py += 2) for (let px = 0; px < BRICK_W; px += 2) {
+        const cx = px >> 1, cy = py >> 1;
+        let on = false;
+        if (row.d === 3) on = !((cx % 2 === 1) && (cy % 2 === 1));
+        else if (row.d === 2) on = (cx + cy) % 2 === 0;
+        else on = (cx % 2 === 0) && (cy % 2 === 0);
+        if (on) tc.fillRect(px, py, 2, 2);
+      }
+    }
+    return t;
+  });
+  wallTile = document.createElement('canvas');
+  wallTile.width = CELL_W; wallTile.height = CELL_H;
+  const wc = wallTile.getContext('2d');
+  wc.fillStyle = sc.wall;
+  for (let py = 0; py < CELL_H; py += 2) for (let px = 0; px < CELL_W; px += 2) {
+    const cx = px >> 1, cy = py >> 1;
+    if (!((cx % 2 === 1) && (cy % 2 === 1))) wc.fillRect(px, py, 2, 2);  // ▓ texture
+  }
+}
+rebuildTiles();
+
+/* ================= Drawing ================= */
+function pad6(n) { return String(Math.min(n, 999999)).padStart(6, '0'); }
+function blinkOn(now) { return Math.floor(now / 500) % 2 === 0; }
+
+function drawStatusBar() {
+  const sc = scheme();
+  let ballsGlyphs = '';
+  for (let i = 0; i < game.balls; i++) ballsGlyphs += '▮';
+  drawText(1, 0, 'SCORE ' + pad6(game.score), sc.accent);
+  drawText(16, 0, 'HIGH ' + pad6(game.highScore), sc.text);
+  drawText(30, 0, 'BALLS ' + ballsGlyphs, sc.text);
+  drawText(44, 0, 'LEVEL ' + game.level, sc.text);
+  if (game.escArmed > 0) drawText(54, 0, 'ESC AGAIN TO QUIT', sc.accent);
+  else if (game.noticeTimer > 0) drawText(54, 0, game.notice, sc.accent);
+}
+function drawWalls() {
+  for (let c = 0; c < COLS; c++) ctx.drawImage(wallTile, c * CELL_W, 1 * CELL_H);
+  for (let r = 2; r < ROWS; r++) {
+    ctx.drawImage(wallTile, 0, r * CELL_H);
+    ctx.drawImage(wallTile, 79 * CELL_W, r * CELL_H);
+  }
+}
+function drawBricks() {
+  for (let r = 0; r < BRICK_ROWS; r++) for (let c = 0; c < BRICK_COLS; c++) {
+    if (!game.wall[r][c]) continue;
+    const br = brickRect(r, c);
+    ctx.drawImage(brickTiles[r], br.x, br.y);
+  }
+}
+function drawPaddle() {
+  ctx.fillStyle = scheme().paddle;
+  ctx.fillRect(Math.round(game.paddle.x), PADDLE_Y, PADDLE_W, PADDLE_H);
+}
+function drawBall() {
+  ctx.fillStyle = scheme().ball;
+  ctx.fillRect(Math.round(game.ball.x), Math.round(game.ball.y), BALL_SIZE, BALL_SIZE);
+}
+function drawPlayfield() {
+  drawStatusBar(); drawWalls(); drawBricks(); drawPaddle();
+}
+
+function drawBoot(now) {
+  const sc = scheme();
+  const t = game.bootTime;
+  let row = 2;
+  for (const line of BOOT_LINES) {
+    if (t >= line.at) drawText(2, row, line.text, sc.text);
+    row++;
+  }
+  const kb = bootMemoryKB(t);
+  if (kb > 0) drawText(2, 5, 'MEMORY TEST : ' + String(kb).padStart(4, '0') + ' KB OK', sc.text);
+  if (t >= 2.4) drawText(2, 8, 'BOOTING FROM DRIVE A:', sc.text);
+  if (t >= 2.8) drawText(2, 10, 'LOADING BRICKS.COM ...', sc.accent);
+  if (blinkOn(now)) drawText(2, 13, '■', sc.text);   // cursor
+}
+
+function drawTitle(now) {
+  const sc = scheme();
+  centerText(3, "BRICKS '86", sc.accent, 3);
+  centerText(8, 'AS PLAYED ON A PC/XT CLONE, ATHENS 1986', sc.text);
+  const legend = [
+    '←/→ OR A/D .. MOVE PADDLE',
+    'SPACE ....... SERVE BALL',
+    'P ........... PAUSE',
+    'M ........... SOUND ON/OFF',
+    'C ........... COLOR SCHEME',
+    'T ........... CRT EFFECT',
+    'ESC ESC ..... QUIT TO TITLE'
+  ];
+  legend.forEach((line, i) => drawText(27, 11 + i, line, sc.text));
+  centerText(19, 'SCHEME: ' + sc.name, sc.text);
+  centerText(20, 'HIGH SCORE ' + pad6(game.highScore), sc.text);
+  if (blinkOn(now)) centerText(22, 'PRESS SPACE TO PLAY', sc.accent);
+}
+
+function draw(now) {
+  ctx.fillStyle = CGA.black;
+  ctx.fillRect(0, 0, W, H);
+  const sc = scheme();
+
+  switch (game.state) {
+    case S.BOOT: drawBoot(now); break;
+    case S.TITLE: drawTitle(now); break;
+    case S.SERVE:
+      drawPlayfield();
+      if (blinkOn(now)) centerText(15, 'PRESS SPACE TO SERVE', sc.accent);
+      break;
+    case S.PLAYING:
+      drawPlayfield(); drawBall();
+      break;
+    case S.LEVEL_CLEAR:
+      drawPlayfield();
+      centerText(15, 'LEVEL ' + game.level + ' CLEARED!', sc.accent);
+      break;
+    case S.PAUSED:
+      drawPlayfield();
+      if (game.pausedFrom === S.PLAYING) drawBall();
+      centerText(13, 'PAUSED', sc.accent, 2);
+      if (game.autoPaused) centerText(16, 'PRESS P TO RESUME', sc.text);
+      break;
+    case S.GAME_OVER:
+      drawPlayfield();
+      centerText(12, 'GAME OVER', sc.accent, 2);
+      centerText(16, 'FINAL SCORE ' + pad6(game.score), sc.text);
+      if (game.newHigh && blinkOn(now)) centerText(17, 'NEW HIGH SCORE!', sc.accent);
+      else if (!game.newHigh) centerText(17, 'HIGH SCORE ' + pad6(game.highScore), sc.text);
+      if (blinkOn(now)) centerText(20, 'PRESS SPACE TO RESTART', sc.accent);
+      break;
+  }
+}
+
+/* ================= Main loop: fixed-step sim, rAF render ================= */
+if (!speaker.available || !(window.AudioContext || window.webkitAudioContext)) {
+  game.notice = 'SOUND OFF - NO AUDIO'; game.noticeTimer = 3;
+}
+let last = performance.now();
+let acc = 0;
+function frame(now) {
+  let dt = (now - last) / 1000;
+  last = now;
+  if (dt > 0.1) dt = 0.1;
+  acc += dt;
+  while (acc >= SIM_DT) {
+    acc -= SIM_DT;
+    if (game.escArmed > 0) game.escArmed = Math.max(0, game.escArmed - SIM_DT);
+    if (game.noticeTimer > 0) game.noticeTimer = Math.max(0, game.noticeTimer - SIM_DT);
+    switch (game.state) {
+      case S.BOOT: stepBoot(SIM_DT); break;
+      case S.SERVE: stepPaddle(SIM_DT); break;
+      case S.PLAYING: stepPaddle(SIM_DT); stepBall(SIM_DT); break;
+      case S.LEVEL_CLEAR:
+        game.stateTimer -= SIM_DT;
+        if (game.stateTimer <= 0) {
+          game.level++;
+          buildWall();
+          toServe();
+        }
+        break;
+    }
+  }
+  draw(now);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
